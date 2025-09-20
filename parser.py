@@ -3,7 +3,7 @@ import random
 import time
 import os
 import json
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 from urllib.parse import urljoin, urlparse
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -62,7 +62,7 @@ class WbParser:
                 product_cards = soup.find_all('div', class_='product-card__wrapper')
 
                 for card in product_cards:
-                    product_data = False # тут будет метод, который соберёт инфу о товаре card
+                    product_data = self.parse_product_card(card)
                     if product_data:
                         products.append(product_data)
 
@@ -73,3 +73,43 @@ class WbParser:
                 continue
 
         return products
+
+    def parse_product_card(self, card: Tag):
+
+        """
+        Возвращает информацию о карточке
+        товара, не открывая саму страницу товара.
+        Для понимания ниже будет функция 'parse_product_detail'
+        """
+
+        try:
+            link_elem = card.find('a', class_='porduct-card__link')
+            if not link_elem:
+                return None
+            
+            product_url = urljoin('https://www.wildberries.ru', link_elem.get('href'))
+
+            name_elem = card.find('span', class_='product-card__name')
+            name = name_elem.text.replace('/', '').strip() if name_elem else "Название не найдено"
+
+            price_elem = card.find('ins', class_='price__lower-price wallet-price red-price')
+            # В строке ниже цена не очищена, так как нужная функция ещё не создана
+            price = price_elem if price_elem else "Цена не найдена"
+
+            raiting_elem = card.find('div', class_='product-card__rating-wrap rating--DCKHb override--kkSDk')
+            raiting = raiting_elem.text.strip() if raiting_elem else "Рейтинг не найден"
+
+            img_elem = card.find('img')
+            preview_img = img_elem.get('src') if img_elem else None
+
+            return{
+                'name': name,
+                'price': price,
+                'raiting': raiting,
+                'url': product_url,
+                'preview_image': preview_img
+            }
+        
+        except Exception as e:
+            print(f'Ошибка при парсинге карточки из поиска: {str(e)}')
+            return None
