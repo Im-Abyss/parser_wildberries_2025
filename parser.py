@@ -77,7 +77,7 @@ class WbParser:
     def parse_product_card(self, card: Tag):
 
         """
-        Возвращает информацию о карточке
+        Вернёт информацию о карточке
         товара, не открывая саму страницу товара.
         Для понимания ниже будет функция 'parse_product_detail'
         """
@@ -93,11 +93,10 @@ class WbParser:
             name = name_elem.text.replace('/', '').strip() if name_elem else "Название не найдено"
 
             price_elem = card.find('ins', class_='price__lower-price wallet-price red-price')
-            # В строке ниже цена не очищена, так как нужная функция ещё не создана
-            price = price_elem if price_elem else "Цена не найдена"
+            price = False # ниже будет функция для "очистки" цены
 
-            raiting_elem = card.find('div', class_='product-card__rating-wrap rating--DCKHb override--kkSDk')
-            raiting = raiting_elem.text.strip() if raiting_elem else "Рейтинг не найден"
+            rating_elem = card.find('div', class_='product-card__rating-wrap rating--DCKHb override--kkSDk')
+            rating = rating_elem.text.strip() if rating_elem else "Рейтинг не найден"
 
             img_elem = card.find('img')
             preview_img = img_elem.get('src') if img_elem else None
@@ -105,7 +104,7 @@ class WbParser:
             return{
                 'name': name,
                 'price': price,
-                'raiting': raiting,
+                'raiting': rating,
                 'url': product_url,
                 'preview_image': preview_img
             }
@@ -113,3 +112,81 @@ class WbParser:
         except Exception as e:
             print(f'Ошибка при парсинге карточки из поиска: {str(e)}')
             return None
+
+    def parse_product_detail(self, product_url):
+
+        """
+        Вернёт данные открытой 
+        страницы отдельного товара
+        """
+
+        try:
+            self.driver.get(product_url)
+            time.sleep(random.uniform(3, 5))
+
+            WebDriverWait(self.driver, 10).until(
+                EC.presence_of_element_located(By.CLASS_NAME, "productPageContent--jaf94")
+            )
+
+            soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+
+            name_elem = soup.find('h1', class_='productTitle--J2W7I')
+            name = name_elem.text.strip() if name_elem else "Название не найдено"
+
+            price_elem = soup.find('ins', class_='priceBlockFinalPrice--iToZR wallet--N1t3o')
+            price = False # ниже будет функция для "очистки" цены
+
+            desc_elem = soup.find('p', class_='descriptionText--Jq9n2')
+            description = desc_elem.text.strip() if desc_elem else "Описание не найдено"
+
+            # парсеры характеристик и изображений так же будут ниже
+            characteristics = False
+
+            images = False
+
+            reviews_count_elem = soup.find('ins', class_='productReviewRating--gQDQG')
+            reviews_count = reviews_count_elem.text.strip() if reviews_count_elem else "0"
+
+            rating_elem = soup.find('span', class_='productReviewCount--hAvps')
+            rating = rating_elem.text.strip() if rating_elem else "Рейтинг не найден"
+
+            print(f'Парсинг товара "{name}" завершён')
+
+            return {
+                'name': name,
+                'price': price,
+                'description': description,
+                'characteristics': characteristics,
+                'images': images,
+                'reviews_count': reviews_count,
+                'rating': rating,
+                'url': product_url
+            }
+        
+        except Exception as e:
+            print(f'Ошибка при парсинге страницы товара {product_url}\n{str(e)}')
+            return None
+        
+    def clean_price(self, price_text):
+
+        """
+        Вернёт всё
+        """
+
+        if not price_text:
+            return "Цена не найдена"
+        
+        cleaned_price = price_text.replace('\xa0', ' ')
+        cleaned_price = cleaned_price.replace('&nbsp;', ' ') # на всякий случай
+        cleaned_price = cleaned_price.strip()
+
+        return cleaned_price
+    
+    def parse_characteristcs(self, soup) -> dict:
+
+        """
+        Вернёт характеристики товара
+        в виде словаря
+        """
+
+        pass
