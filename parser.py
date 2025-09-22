@@ -182,11 +182,50 @@ class WbParser:
 
         return cleaned_price
     
-    def parse_characteristcs(self, soup) -> dict:
+    def parse_characteristcs(self, soup) -> list:
 
         """
-        Вернёт характеристики товара
-        в виде словаря
+        Вернёт список с 
+        характеристиками товара
         """
 
+        characteristics = []
+
+        try:
+            char_table = soup.find('tbody')
+            if char_table:
+                rows = char_table.find_all('tr')
+                for row in rows:
+                    key = row.find('span', class_='cellWrapper--i4h93').text.strip()
+                    value = row.find('tr').text.strip()
+                    characteristic = {key: value}
+                    characteristics.append(characteristic)
+        except Exception as e:
+            print(f'Ошибка при парсинге характеристик:\n{str(e)}')
+
+        return characteristics
+    
+    def parse_product_images(self, soup):
+
+        """
+        Вернёт список url изображений товара
+        """
+
+        images = []
+
+        try:
+            img_elements = soup.find_all('img')
+
+            for img in img_elements:
+                img_src = img.get('src')
+                if img_src:
+                    full_img_url = img_src.replace('/c246x328/', '/big/')
+                    images.append(full_img_url)
+
+        except Exception as e:
+            print(f'Ошибка при парсинге изображений товара:\n{str(e)}')
+
+        return list(set(images))
+    
+    def download_images(self, images, product_name, save_dir='images'):
         pass
