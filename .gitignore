@@ -1,5 +1,5 @@
 .venv/
-__pycashe__/
+__pycache__/
 
 test*
 config*

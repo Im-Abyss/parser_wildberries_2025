@@ -25,7 +25,7 @@ class WbParser:
         """
 
         chrome_options = Options()
-        
+     
         chrome_options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
         if headless:
             chrome_options.add_argument("--headless")
@@ -33,7 +33,7 @@ class WbParser:
         chrome_options.add_argument("--disable-dev-shm-usage")
         chrome_options.add_argument("--disable-blink-features=AutomationControlled")
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
-        chrome_options.add_experimental_option('useAutomationExtention', False)
+        chrome_options.add_experimental_option('useAutomationExtension', False)
 
         self.driver = webdriver.Chrome(options=chrome_options)
         self.driver.execute_script("Object.defineProperty(navigator, 'webdriver', {get: () => undefined})")
@@ -55,10 +55,10 @@ class WbParser:
                 time.sleep(random.uniform(2, 4))
 
                 WebDriverWait(self.driver, 10).until(
-                    EC.presence_of_element_located(By.CLASS_NAME, "product-card__wrapper")
+                    EC.presence_of_element_located((By.CLASS_NAME, "product-card__wrapper"))
                 )
 
-                soup = BeautifulSoup(self.driver.page_source, 'html_parser')
+                soup = BeautifulSoup(self.driver.page_source, 'html.parser')
                 product_cards = soup.find_all('div', class_='product-card__wrapper')
 
                 for card in product_cards:
@@ -83,7 +83,7 @@ class WbParser:
         """
 
         try:
-            link_elem = card.find('a', class_='porduct-card__link')
+            link_elem = card.find('a', class_='product-card__link j-card-link j-open-full-product-card')
             if not link_elem:
                 return None
             
@@ -93,7 +93,7 @@ class WbParser:
             name = name_elem.text.replace('/', '').strip() if name_elem else "Название не найдено"
 
             price_elem = card.find('ins', class_='price__lower-price wallet-price red-price')
-            price = False # ниже будет функция для "очистки" цены
+            price = self.clean_price(price_elem.text) if price_elem else "Цена не найдена"
 
             rating_elem = card.find('div', class_='product-card__rating-wrap rating--DCKHb override--kkSDk')
             rating = rating_elem.text.strip() if rating_elem else "Рейтинг не найден"
@@ -125,7 +125,7 @@ class WbParser:
             time.sleep(random.uniform(3, 5))
 
             WebDriverWait(self.driver, 10).until(
-                EC.presence_of_element_located(By.CLASS_NAME, "productPageContent--jaf94")
+                EC.presence_of_element_located((By.CLASS_NAME, "productPageContent--jaf94"))
             )
 
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
@@ -134,15 +134,15 @@ class WbParser:
             name = name_elem.text.strip() if name_elem else "Название не найдено"
 
             price_elem = soup.find('ins', class_='priceBlockFinalPrice--iToZR wallet--N1t3o')
-            price = False # ниже будет функция для "очистки" цены
+            price = self.clean_price(price_elem.text) if price_elem else "Цена не найдена"
 
             desc_elem = soup.find('p', class_='descriptionText--Jq9n2')
             description = desc_elem.text.strip() if desc_elem else "Описание не найдено"
 
             # парсеры характеристик и изображений так же будут ниже
-            characteristics = False
+            characteristics = self.parse_characteristics(soup)
 
-            images = False
+            images = self.parse_product_images(soup)
 
             reviews_count_elem = soup.find('ins', class_='productReviewRating--gQDQG')
             reviews_count = reviews_count_elem.text.strip() if reviews_count_elem else "0"
@@ -182,7 +182,7 @@ class WbParser:
 
         return cleaned_price
     
-    def parse_characteristcs(self, soup) -> list:
+    def parse_characteristics(self, soup) -> list:
 
         """
         Вернёт список с 
@@ -197,7 +197,7 @@ class WbParser:
                 rows = char_table.find_all('tr')
                 for row in rows:
                     key = row.find('span', class_='cellWrapper--i4h93').text.strip()
-                    value = row.find('tr').text.strip()
+                    value = row.find('td').text.strip()
                     characteristic = {key: value}
                     characteristics.append(characteristic)
         except Exception as e:
@@ -252,7 +252,7 @@ class WbParser:
                     filename = f"image_{i+1}{file_ext}"
                     filepath = os.path.join(product_dir, filename)
 
-                    with open(filepath, 'wh') as f:
+                    with open(filepath, 'wb') as f:
                         for chunk in response.iter_content(chunk_size=8192):
                             f.write(chunk)
 
