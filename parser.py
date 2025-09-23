@@ -227,5 +227,58 @@ class WbParser:
 
         return list(set(images))
     
-    def download_images(self, images, product_name, save_dir='images'):
-        pass
+    def download_images(self, images, product_name, save_dir='images') -> list:
+        
+        """
+        Вернёт список скачанных изображений
+        """
+
+        downloaded = []
+
+        safe_name = "".join(c for c in product_name if c.isalnum() or c in (" ", "-", "_")).rstrip()
+        product_dir = os.path.join(save_dir, safe_name[:50])
+
+        if not os.path.exists(product_dir):
+            os.makedirs(product_dir)
+
+        for i, img_url in enumerate(images):
+            try:
+                response = requests.get(img_url, stream=True)
+                if response.status_code == 200:
+
+                    parsed_url=urlparse(img_url)
+                    file_ext = os.path.splitext(parsed_url.path)[1] or '.jpg'
+
+                    filename = f"image_{i+1}{file_ext}"
+                    filepath = os.path.join(product_dir, filename)
+
+                    with open(filepath, 'wh') as f:
+                        for chunk in response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+
+                    downloaded.append(filepath)
+                    print(f"Скачано: {filename}")
+
+            except Exception as e:
+                print(f"Ошибка при скачивании:\n{e}")
+
+        return downloaded
+    
+    def safe_to_json(self, data, filename='wb_products.json'):
+
+        """
+        Сохраняет данные в json формате
+        """
+
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f'Данные сохранены в {filename}')
+
+    def close(self):
+
+        """
+        Закрывает драйвер
+        """
+
+        if hasattr(self, 'driver'):
+            self.driver.quit()
