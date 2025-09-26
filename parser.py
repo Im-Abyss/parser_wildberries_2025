@@ -79,7 +79,7 @@ class WbParser:
         """
         Вернёт информацию о карточке
         товара, не открывая саму страницу товара.
-        Для понимания ниже будет функция 'parse_product_detail'
+        Саму страницу товара парсит 'parse_product_detail'
         """
 
         try:
@@ -139,7 +139,6 @@ class WbParser:
             desc_elem = soup.find('p', class_='descriptionText--Jq9n2')
             description = desc_elem.text.strip() if desc_elem else "Описание не найдено"
 
-            # парсеры характеристик и изображений так же будут ниже
             characteristics = self.parse_characteristics(soup)
 
             images = self.parse_product_images(soup)
@@ -147,7 +146,7 @@ class WbParser:
             reviews_count_elem = soup.find('ins', class_='productReviewRating--gQDQG')
             reviews_count = reviews_count_elem.text.strip() if reviews_count_elem else "0"
 
-            rating_elem = soup.find('span', class_='productReviewCount--hAvps')
+            rating_elem = soup.find('span', class_='address-rate-mini address-rate-mini--sm')
             rating = rating_elem.text.strip() if rating_elem else "Рейтинг не найден"
 
             print(f'Парсинг товара "{name}" завершён')
