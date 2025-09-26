@@ -4,8 +4,8 @@ def main():
     parser = WbParser(headless=True)
 
     try:
+        products = parser.search_products(input('Введите название товара для поиска...\n'), max_pages=2)
         print("Поиск товаров...")
-        products = parser.search_products("футболки мужские", max_pages=2)
         print(f"Найдено товаров: {len(products)}")
         
         detailed_products = []
