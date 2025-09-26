@@ -4,7 +4,8 @@
 Скачанные изображения сохраняются в папку images (можно задать своё название), в которой создаются папки с названиями товаров, и в них уже сохранются изображения каждого товара. Так сделано для того, чтобы изображения разных товаров не перемешивались.
 
 Для запуска парсера в терминале введите:
-1. ```git clone https://github.com/Im-Abyss/parser_wildberries_2025.git```
-2. ```.\.venv\Scripts\activate```
-3. ```pip install -r requirements.txt```
-4. ```python.exe .\main.py```
+```
+git clone https://github.com/Im-Abyss/parser_wildberries_2025.git
+.\.venv\Scripts\activate
+pip install -r requirements.txt
+python.exe .\main.py```
