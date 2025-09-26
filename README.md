@@ -6,6 +6,10 @@
 Для запуска парсера в терминале введите:
 ```
 git clone https://github.com/Im-Abyss/parser_wildberries_2025.git
+
 .\.venv\Scripts\activate
+
 pip install -r requirements.txt
-python.exe .\main.py```
+
+python.exe .\main.py
+```
